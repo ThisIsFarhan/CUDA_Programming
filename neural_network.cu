@@ -2,6 +2,7 @@
 #include <cuda_runtime.h>
 #include <curand.h>
 #include <cublas_v2.h>
+#include <chrono>
 
 
 __global__ void addBias(float *output, float *bias, int rows, int cols){
@@ -335,6 +336,10 @@ int main() {
     Softmax    softmax;
     SGD        optimizer(0.1f);
 
+    std::cout << "Starting training...\n";
+
+    auto start = std::chrono::high_resolution_clock::now();
+
     // simple training loop
     for(int epoch = 0; epoch <= 10000; epoch++){
         // forward
@@ -359,6 +364,11 @@ int main() {
         optimizer.update_params(dense2);
         optimizer.post_update_params();
     }
+
+    auto stop = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double> elapsed = stop - start;
+    std::cout << "\nTraining completed in: " << elapsed.count() << " seconds\n";
 
     // --- Inference ---
     std::cout << "\nXNOR Predictions after Training:\n";
@@ -385,6 +395,8 @@ int main() {
                   << " | Pred: " << prediction 
                   << " (Prob: " << (prediction == 1 ? prob1 : prob0) << ")\n";
     }
+
+   
 
     delete[] h_final_probs;
 
